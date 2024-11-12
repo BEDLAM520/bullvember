@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana Meme Coin Community</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://terminal.jup.ag/main-v3.js"></script>
+  <!-- Import @solana/web3.js from Solana's official GitHub as UMD bundle -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+</head>
+<body>
+  <header>
+    <nav class="container-fluid">
+      <li><a href="#chart">Chart</a></li>
+      <li><a href="#swap">Swap</a></li>
+      <li><a href="#donations">Donations</a></li>
+    </nav>
+  </header>
+  <main class="container">
+    <!-- Header -->
+    <section class="hero">
+      <img id="headerImage" src="https://bullvember.4everland.store/img/1500x500.jpeg" alt="Bullvember Header">
+      <div><h1 id="headerHeading">Welcome to $BULLVEMBER CTO</h1></div>
+    </section>
+
+    <!-- DEXScreener Chart Integration -->
+    <section id="chart" class="chart">
+      <h2>The Chart</h2>
+      <div id="dexscreener-embed">
+        <iframe src="https://dexscreener.com/solana/3ikimMiwNYM3wbBg3ycw7JGup7scCFvZNxhpBR5qu6KA?embed=1&theme=dark&trades=0&info=0" style="width:100%; height: 400px;" frameborder="0"></iframe>
+      </div>
+    </section>
+
+    <!-- Jupiter Swap Integration -->
+    <section id="swap" class="swap">
+      <h2>Buy $BULLVEMBER</h2>
+      <div id="integrated-terminal"></div>
+    </section>
+
+   
+    <section id="donations" class="donation-tracker">
+      <h2>Community Donations</h2>
+      <p>Track the community's contributions to our multi-sig donations wallet in real-time here!</p>
+      <div class="thermo-container" id="thermo-container">
+        <div class="thermo-bulb" id="thermo-bulb"></div>
+        <div class="thermo-scale" id="thermo-scale"></div>
+        <div class="thermo-mercury" id="thermo-mercury" style="height: 0;"></div>
+        <div class="thermo-value" id="thermo-value">0</div>
+      </div>
+    </section>
+
+    <script>
+      const solanaRpc = new solanaWeb3.Connection("https://crimson-compatible-yard.solana-mainnet.quiknode.pro/79057c78e08e54af427c4f140db39437a93c9962/");
+      const tokenAccountPublicKey = new solanaWeb3.PublicKey("GdznTM1Tu4yeXGBx5MvG89Kuo3X81CWsGDRsoTQDgBej"); // Your token account public key
+      const donationToken = "$BULLVEMBER"; // Replace with your token name
+      const tokenDecimals = 6; // Adjust based on your token's decimal places
+
+      async function getSolanaBalance() {
+        try {
+          const tokenAccountBalance = await solanaRpc.getTokenAccountBalance(tokenAccountPublicKey);
+          const balance = tokenAccountBalance.value.amount / Math.pow(10, tokenDecimals);
+          console.log("Fetched balance:", balance);
+          return balance;
+        } catch (error) {
+          console.error("Error fetching token account balance:", error);
+          return 0; // Handle errors gracefully, display error message or default value
+        }
+      }
+
+      function updateThermometer(balance) {
+        const thermoMercury = document.getElementById("thermo-mercury");
+        const thermoValue = document.getElementById("thermo-value");
+        const maxBalance = 100000000; // Adjust max balance as needed
+
+        // Calculate percentage based on max balance
+        const percentage = Math.min(balance / maxBalance, 1) * 100;
+
+        // Log the calculated percentage for debugging
+        console.log("Calculated percentage:", percentage);
+
+        // Update UI elements
+        thermoMercury.style.height = `${percentage}%`;
+        thermoValue.textContent = `${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${donationToken}`;
+      }
+
+      async function updateDonationBalance() {
+        const balance = await getSolanaBalance();
+        updateThermometer(balance);
+      }
+
+      // Initial balance update
+      updateDonationBalance();
+
+      // Update balance every 60 seconds
+      setInterval(updateDonationBalance, 60000);
+    </script>
+
+    <!-- Social Media Links -->
+    <section class="social-media">
+      <h2>Bullvember Socials</h2>
+      <p>
+        <a href="#">X</a> |
+        <a href="#">Telegram</a> |
+        <a href="#">Discord</a>
+      </p>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <footer class="container">
+    <small>
+      <a href="https://dexscreener.com">DEXScreener</a> •
+      <a href="https://pump.fun">pump.fun</a> •
+      <a href="https://explorer.solana.com">Solana Explorer</a>
+    </small>
+  </footer>
+
+  <!-- Load script.js only after solanaWeb3 is loaded -->
+  <script>
+    // Initialize the Jupiter Swap component
+    window.Jupiter.init({
+      displayMode: "integrated",
+      integratedTargetId: "integrated-terminal",
+      endpoint: "https://crimson-compatible-yard.solana-mainnet.quiknode.pro/79057c78e08e54af427c4f140db39437a93c9962",
+      strictTokenList: false,
+      formProps: {
+        fixedOutputMint: true,
+        swapMode: "ExactIn",
+        initialAmount: "1000000",
+        initialOutputMint: "AGTWyiBt3xhLXk8Rugr3Wtkzte83rHsioGz6XSZLpump",
+        initialSlippageBps: 1,
+      },
+    });
+  </script>
+
+  <!-- Use `defer` only after all other scripts have loaded -->
+  <script>
+    function loadScript() {
+      const script = document.createElement('script');
+      script.src = 'script.js';
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
+    // Wait until solanaWeb3 is available before loading script.js
+    if (typeof solanaWeb3 !== 'undefined') {
+      loadScript();
+    } else {
+      window.addEventListener('load', () => {
+        loadScript();
+      });
+    }
+  </script>
+
+</body>
+</html>
